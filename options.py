@@ -1,12 +1,15 @@
 from optparse import OptionParser, Option, OptionValueError
 from copy import copy
 
+import os
+
 __all__ = ['get_options']
 
 _allowed_format_types = set(['db', 'xml', 'html', 'txt'])
 
 def _check_format(option, opt, value):
     result = set(value.split('+'))
+
     if not result.issubset(_allowed_format_types):
         raise OptionValueError(
             "option %s: invalid value: %s" % (opt, '+'.join(result - _allowed_format_types)))
@@ -25,4 +28,24 @@ def get_options(version):
     parser.add_option('-o', '--output-file', dest="destination", action="store", help="Output file name", metavar="DEST")
     parser.add_option('-t', '--type', dest="type", action="store", type="format", help="Type of export [xml|txt|html|db]", metavar="TYPE", default="db")
 
-    return parser.parse_args()
+    (options, args) = parser.parse_args()
+
+    if options.filename is None:
+        options.filename = list()
+
+    if args:
+        options.filename.extend(args)
+
+    if options.listfile:
+        if not os.path.exists(options.listfile):
+            raise OptionValueError("option %s: file %s not exist" % ('--list-file', options.listfile))
+
+        options.filename.extend(
+            [line.rstrip(' \n\r') for line in open(options.listfile)]
+        )
+
+    for f in options.filename:
+        if not os.path.exists(f):
+            raise OptionValueError("Data file %s not exist" % f)
+    
+    return options
