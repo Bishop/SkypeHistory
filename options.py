@@ -36,16 +36,20 @@ def get_options(version):
     if args:
         options.filename.extend(args)
 
-    if options.listfile:
-        if not os.path.exists(options.listfile):
-            raise OptionValueError("option %s: file %s not exist" % ('--list-file', options.listfile))
+    try:
+        if options.listfile:
+            if not os.path.exists(options.listfile):
+                raise OptionValueError("option %s: file %s not exist" % ('--list-file', options.listfile))
 
-        options.filename.extend(
-            [line.rstrip(' \n\r') for line in open(options.listfile)]
-        )
+            options.filename.extend(
+                [line.rstrip(' \n\r') for line in open(options.listfile)]
+            )
 
-    for f in options.filename:
-        if not os.path.exists(f):
-            raise OptionValueError("Data file %s not exist" % f)
+        for f in options.filename:
+            if not os.path.exists(f):
+                raise OptionValueError("Data file %s not exist" % f)
+
+    except OptionValueError as e:
+        parser.error(e.msg)
     
     return options
