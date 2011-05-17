@@ -22,10 +22,19 @@ def check_export_table(conn):
             )
         """,
         """
+            CREATE TABLE IF NOT EXISTS main.chat (
+                id INTEGER NOT NULL PRIMARY KEY,
+                name TEXT NOT NULL,
+                timestamp INTEGER NOT NULL,
+                participants TEXT NOT NULL,
+                UNIQUE (name) ON CONFLICT IGNORE
+            )
+        """,
+        """
             CREATE TABLE IF NOT EXISTS main.contact (
                 id INTEGER NOT NULL PRIMARY KEY,
-                skypename TEXT,
-                fullname TEXT,
+                skypename NOT NULL TEXT,
+                fullname NOT NULL TEXT,
                 birthday INTEGER,
                 gender INTEGER,
                 UNIQUE (skypename) ON CONFLICT IGNORE
