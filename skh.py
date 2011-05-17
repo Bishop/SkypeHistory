@@ -36,9 +36,16 @@ def check_export_table(conn):
     for sql in sqls:
         c.execute(sql)
 
-conn = sqlite3.connect('skh.db')
+conn = sqlite3.connect('export.db')
 
 check_export_table(conn)
 
+c = conn.cursor()
+for source in options.filename:
+    c.execute(""" ATTACH DATABASE "%s" AS source """ % source)
+
+    c.execute(""" INSERT INTO main.contact (skypename, fullname, birthday, gender) SELECT skypename, fullname, birthday, gender FROM source.Contacts ORDER BY skypename """)
+
+    c.execute(""" DETACH DATABASE source """)
 
 conn.close()
