@@ -55,6 +55,8 @@ for source in options.filename:
     c.execute(""" ATTACH DATABASE "%s" AS source """ % source)
 
     c.execute(""" INSERT INTO main.contact (skypename, fullname, birthday, gender) SELECT skypename, fullname, birthday, gender FROM source.Contacts ORDER BY skypename """)
+    c.execute(""" INSERT INTO main.chat (name, timestamp, participants) SELECT name, timestamp, participants FROM source.Chats ORDER BY timestamp """)
+    c.execute(""" INSERT INTO main.message (chatname, timestamp, author, message) SELECT chatname, timestamp, author, body_xml FROM source.Messages ORDER BY timestamp """)
 
     c.execute(""" DETACH DATABASE source """)
 
