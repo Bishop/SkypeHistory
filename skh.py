@@ -46,6 +46,23 @@ def check_export_table(conn):
     for sql in sqls:
         c.execute(sql)
 
+def export_to_xml(cursor):
+    from xml.dom.minidom import Document
+    
+    cursor.execute(""" SELECT * FROM main.message ORDER BY chatname, timestamp """)
+    
+    doc = Document()
+
+    h = doc.createElement("history")
+    doc.appendChild(h)
+
+    conversation = doc.createElement("conversation")
+    conversation.setAttribute("id", "main")
+    h.appendChild(conversation)
+    
+    return doc.toprettyxml(indent="\t")
+
+        
 conn = sqlite3.connect('export.db')
 
 check_export_table(conn)
@@ -60,4 +77,6 @@ for source in options.filename:
 
     c.execute(""" DETACH DATABASE source """)
 
+
+    
 conn.close()
