@@ -55,10 +55,22 @@ def export_to_xml(cursor):
 
     h = doc.createElement("history")
     doc.appendChild(h)
-
-    conversation = doc.createElement("conversation")
-    conversation.setAttribute("id", "main")
-    h.appendChild(conversation)
+    
+    conversation_id = ''
+    
+    for row in cursor:
+        if conversation_id != row['chatname']:
+            conversation = doc.createElement("conversation")
+            conversation.setAttribute("id", row['chatname'])
+            h.appendChild(conversation)
+        
+        m = doc.createElement("message")
+        m.appendChild(doc.createElement("author").appendChild(doc.createTextNode(row['author'])))
+        m.appendChild(doc.createElement("date").appendChild(doc.createTextNode(row['timestamp'])))
+        m.appendChild(doc.createElement("text").appendChild(doc.createTextNode(row['message'])))
+            
+        conversation.appendChild(m)
+    
     
     return doc.toprettyxml(indent="\t")
 
@@ -77,6 +89,6 @@ for source in options.filename:
 
     c.execute(""" DETACH DATABASE source """)
 
-
+export_to_xml(c)
     
 conn.close()
