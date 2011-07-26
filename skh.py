@@ -49,11 +49,15 @@ def check_export_table(conn):
 
 def export_to_xml(cursor):
     from xml.dom.minidom import Document
+    doc = Document()
     
+    def text_node(name, value):
+        node = doc.createElement(name)
+        node.appendChild(doc.createTextNode(value))
+        return node
+        
     cursor.execute(""" SELECT * FROM main.message ORDER BY chatname, timestamp """)
     
-    doc = Document()
-
     h = doc.createElement("history")
     doc.appendChild(h)
     
@@ -66,16 +70,16 @@ def export_to_xml(cursor):
             h.appendChild(conversation)
         
         m = doc.createElement("message")
-        m.appendChild(doc.createElement("author").appendChild(doc.createTextNode(row['author'])))
-        m.appendChild(doc.createElement("date").appendChild(doc.createTextNode(str(row['timestamp']))))
+        
+        m.appendChild(text_node("author", row['author']))
+        m.appendChild(text_node("date", str(row['timestamp'])))
+        
         if row['message'] is not None:
-            m.appendChild(doc.createElement("text").appendChild(doc.createTextNode(row['message'])))
+            m.appendChild(text_node("text", row['message']))
             
         conversation.appendChild(m)
     
-    
     return doc.toprettyxml(indent="\t")
-
         
 conn = sqlite3.connect('export.db')
 
