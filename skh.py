@@ -68,6 +68,7 @@ def export_to_xml(cursor):
             conversation = doc.createElement("conversation")
             conversation.setAttribute("id", row['chatname'])
             h.appendChild(conversation)
+            conversation_id = row['chatname']
         
         m = doc.createElement("message")
         
