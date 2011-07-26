@@ -1,6 +1,7 @@
 import sqlite3
 import sys
 import options
+import tempfile
 
 VERSION = "0.0.1"
 
@@ -66,8 +67,9 @@ def export_to_xml(cursor):
         
         m = doc.createElement("message")
         m.appendChild(doc.createElement("author").appendChild(doc.createTextNode(row['author'])))
-        m.appendChild(doc.createElement("date").appendChild(doc.createTextNode(row['timestamp'])))
-        m.appendChild(doc.createElement("text").appendChild(doc.createTextNode(row['message'])))
+        m.appendChild(doc.createElement("date").appendChild(doc.createTextNode(str(row['timestamp']))))
+        if row['message'] is not None:
+            m.appendChild(doc.createElement("text").appendChild(doc.createTextNode(row['message'])))
             
         conversation.appendChild(m)
     
@@ -79,7 +81,9 @@ conn = sqlite3.connect('export.db')
 
 check_export_table(conn)
 
+conn.row_factory = sqlite3.Row
 c = conn.cursor()
+
 for source in options.filename:
     c.execute(""" ATTACH DATABASE "%s" AS source """ % source)
 
@@ -89,6 +93,9 @@ for source in options.filename:
 
     c.execute(""" DETACH DATABASE source """)
 
-export_to_xml(c)
-    
+xml = export_to_xml(c)
+
+with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
+    xml_file.write(xml.encode('utf-8'))
+
 conn.close()
