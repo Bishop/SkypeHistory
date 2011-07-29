@@ -25,7 +25,7 @@ def get_options(version):
     parser = OptionParser(option_class=SkHOption, version="%%prog %s" % version)
     parser.add_option('-i', '--input-file', dest="filename", action="append", help="Input file (multiple)", metavar="FILE")
     parser.add_option('-l', '--list-file', dest="listfile", help="File with list of input files (one by line)", metavar="LIST")
-    parser.add_option('-o', '--output-file', dest="destination", action="store", help="Output file name", metavar="DEST")
+    parser.add_option('-o', '--output-file', dest="destination", action="store", help="Output file name", metavar="DEST", default="export")
     parser.add_option('-t', '--type', dest="type", action="store", type="format", help="Type of export [xml|txt|html|db]", metavar="TYPE", default="db")
 
     (options, args) = parser.parse_args()
@@ -51,5 +51,18 @@ def get_options(version):
 
     except OptionValueError as e:
         parser.error(e.msg)
+        
+    out_dir = os.path.dirname(options.destination)
+    out_file, format = os.path.splitext(os.path.basename(options.destination))
+    format = format.lstrip('.')
+    print format
+    
+    if out_dir == '':
+        out_dir = os.getcwd()
+    
+    options.destination = os.path.join(out_dir, out_file)
+    
+    if format != '':
+        options.type = _check_format(None, 'format', format)
     
     return options
