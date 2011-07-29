@@ -55,7 +55,6 @@ def get_options(version):
     out_dir = os.path.dirname(options.destination)
     out_file, format = os.path.splitext(os.path.basename(options.destination))
     format = format.lstrip('.')
-    print format
     
     if out_dir == '':
         out_dir = os.getcwd()

@@ -82,7 +82,7 @@ def export_to_xml(cursor):
     
     return doc.toprettyxml(indent="\t")
         
-conn = sqlite3.connect('export.db')
+conn = sqlite3.connect(options.destination + '.db')
 
 check_export_table(conn)
 
