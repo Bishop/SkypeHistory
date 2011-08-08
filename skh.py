@@ -2,6 +2,7 @@ import sqlite3
 import sys
 import options
 import tempfile
+import os
 
 VERSION = "0.0.2"
 
@@ -9,43 +10,18 @@ options = options.get_options(VERSION)
 
 print options
 
+app_dir = os.path.dirname(__file__)
+
 def check_export_table(conn):
     c = conn.cursor()
 
-    sqls = [
-        """
-            CREATE TABLE IF NOT EXISTS main.message (
-                id INTEGER NOT NULL PRIMARY KEY,
-                chatname TEXT NOT NULL,
-                timestamp INTEGER NOT NULL,
-                author TEXT NOT NULL,
-                message TEXT,
-                UNIQUE (chatname, timestamp, author) ON CONFLICT IGNORE
-            )
-        """,
-        """
-            CREATE TABLE IF NOT EXISTS main.chat (
-                id INTEGER NOT NULL PRIMARY KEY,
-                name TEXT NOT NULL,
-                timestamp INTEGER NOT NULL,
-                participants TEXT NOT NULL,
-                UNIQUE (name) ON CONFLICT IGNORE
-            )
-        """,
-        """
-            CREATE TABLE IF NOT EXISTS main.contact (
-                id INTEGER NOT NULL PRIMARY KEY,
-                skypename TEXT NOT NULL,
-                fullname TEXT,
-                birthday INTEGER,
-                gender INTEGER,
-                UNIQUE (skypename) ON CONFLICT IGNORE
-            )
-        """
-    ]
+    sqls = []
+    
+    with open(os.path.join(app_dir, 'schema.sql')) as f:
+        sqls = f.read().split(';')
 
     for sql in sqls:
-        c.execute(sql)
+       c.execute(sql)
 
 def export_to_xml(cursor):
     from xml.dom.minidom import Document
