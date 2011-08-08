@@ -12,16 +12,12 @@ print options
 
 app_dir = os.path.dirname(__file__)
 
-def check_export_table(conn):
-    c = conn.cursor()
-
-    sqls = []
-    
+def check_export_table(c):
     with open(os.path.join(app_dir, 'schema.sql')) as f:
         sqls = f.read().split(';')
 
     for sql in sqls:
-       c.execute(sql)
+        c.execute(sql)
 
 def export_to_xml(cursor):
     from xml.dom.minidom import Document
@@ -57,22 +53,24 @@ def export_to_xml(cursor):
         conversation.appendChild(m)
     
     return doc.toprettyxml(indent="\t")
-        
+
+def convert_data(c, files):
+    for source in files:
+        c.execute(""" ATTACH DATABASE "%s" AS source """ % source)
+
+        c.execute(""" INSERT INTO main.contact (skypename, fullname, birthday, gender) SELECT skypename, fullname, birthday, gender FROM source.Contacts ORDER BY skypename """)
+        c.execute(""" INSERT INTO main.chat (name, timestamp, participants) SELECT name, timestamp, participants FROM source.Chats ORDER BY timestamp """)
+        c.execute(""" INSERT INTO main.message (chatname, timestamp, author, message) SELECT chatname, timestamp, author, body_xml FROM source.Messages ORDER BY timestamp """)
+
+        c.execute(""" DETACH DATABASE source """)
+    
 conn = sqlite3.connect(options.destination + '.db')
-
-check_export_table(conn)
-
 conn.row_factory = sqlite3.Row
+
 c = conn.cursor()
 
-for source in options.filename:
-    c.execute(""" ATTACH DATABASE "%s" AS source """ % source)
-
-    c.execute(""" INSERT INTO main.contact (skypename, fullname, birthday, gender) SELECT skypename, fullname, birthday, gender FROM source.Contacts ORDER BY skypename """)
-    c.execute(""" INSERT INTO main.chat (name, timestamp, participants) SELECT name, timestamp, participants FROM source.Chats ORDER BY timestamp """)
-    c.execute(""" INSERT INTO main.message (chatname, timestamp, author, message) SELECT chatname, timestamp, author, body_xml FROM source.Messages ORDER BY timestamp """)
-
-    c.execute(""" DETACH DATABASE source """)
+check_export_table(c)
+convert_data(c, options.filename)
 
 xml = export_to_xml(c)
 
