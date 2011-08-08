@@ -3,14 +3,15 @@ import sys
 import options
 import tempfile
 import os
+import logging
 
-VERSION = "0.0.2"
+__version__ = "0.0.3"
 
-options = options.get_options(VERSION)
-
-print options
-
+options = options.get_options(__version__)
 app_dir = os.path.dirname(__file__)
+
+logging.basicConfig(level=logging.INFO, format='%(levelname)-10s %(asctime)-24s %(message)s')
+logging.info('Started with options: ' + str(options))
 
 def check_export_table(c):
     with open(os.path.join(app_dir, 'schema.sql')) as f:
@@ -69,12 +70,19 @@ conn.row_factory = sqlite3.Row
 
 c = conn.cursor()
 
-check_export_table(c)
-convert_data(c, options.filename)
+if len(options.filename):
+    logging.info('Check export table')
+    check_export_table(c)
 
-xml = export_to_xml(c)
+    logging.info('Convert data')
+    convert_data(c, options.filename)
+    
+    logging.info('Export to XML')
+    xml = export_to_xml(c)
 
-with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
-    xml_file.write(xml.encode('utf-8'))
+    with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
+        xml_file.write(xml.encode('utf-8'))
+else:
+    logging.warning('Empty file set')
 
 conn.close()
