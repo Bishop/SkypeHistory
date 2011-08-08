@@ -3,7 +3,7 @@ import sys
 import options
 import tempfile
 
-VERSION = "0.0.1"
+VERSION = "0.0.2"
 
 options = options.get_options(VERSION)
 
