@@ -38,13 +38,14 @@ def export_to_xml(row_set):
         if conversation_id != row['chatname']:
             conversation = doc.createElement("conversation")
             conversation.setAttribute("id", row['chatname'])
+            conversation.setAttribute("timestamp", str(row['chattimestamp']))
             h.appendChild(conversation)
             conversation_id = row['chatname']
 
         m = doc.createElement("message")
 
         m.appendChild(text_node("author", row['author']))
-        m.appendChild(text_node("date", str(row['timestamp'])))
+        m.appendChild(text_node("timestamp", str(row['timestamp'])))
 
         if row['message'] is not None:
             m.appendChild(text_node("text", row['message']))
@@ -64,9 +65,9 @@ def convert_data(c, files):
         c.execute(""" DETACH DATABASE source """)
 
 def prepare_export_rowset(c):
-    c.execute(""" CREATE TEMP TABLE ordered_chat (_chatname TEXT NOT NULL, _chattimestamp INTEGER NOT NULL) """)
+    c.execute(""" CREATE TEMP TABLE ordered_chat (chatname TEXT NOT NULL, chattimestamp INTEGER NOT NULL) """)
     c.execute(""" INSERT INTO ordered_chat SELECT name, timestamp FROM main.chat ORDER BY timestamp """)
-    c.execute(""" SELECT * FROM main.message JOIN ordered_chat ON main.message.chatname = ordered_chat._chatname ORDER BY _chattimestamp, chatname, timestamp """)
+    c.execute(""" SELECT * FROM main.message JOIN ordered_chat ON main.message.chatname = ordered_chat.chatname ORDER BY chattimestamp, chatname, timestamp """)
 
 conn = sqlite3.connect(options.destination + '.db')
 conn.row_factory = sqlite3.Row
