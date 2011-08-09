@@ -20,7 +20,7 @@ def check_export_table(c):
     for sql in sqls:
         c.execute(sql)
 
-def export_to_xml(cursor):
+def export_to_xml(row_set):
     from xml.dom.minidom import Document
     doc = Document()
     
@@ -28,15 +28,13 @@ def export_to_xml(cursor):
         node = doc.createElement(name)
         node.appendChild(doc.createTextNode(value))
         return node
-        
-    cursor.execute(""" SELECT * FROM main.message ORDER BY chatname, timestamp """)
     
     h = doc.createElement("history")
     doc.appendChild(h)
     
     conversation_id = ''
     
-    for row in cursor:
+    for row in row_set:
         if conversation_id != row['chatname']:
             conversation = doc.createElement("conversation")
             conversation.setAttribute("id", row['chatname'])
@@ -77,6 +75,7 @@ logging.info('Convert data')
 convert_data(c, options.filename)
 
 logging.info('Export to XML')
+c.execute(""" SELECT * FROM main.message ORDER BY chatname, timestamp """)
 xml = export_to_xml(c)
 
 with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
