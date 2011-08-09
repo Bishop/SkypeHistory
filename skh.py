@@ -62,6 +62,11 @@ def convert_data(c, files):
         c.execute(""" INSERT INTO main.message (chatname, timestamp, author, message) SELECT chatname, timestamp, author, body_xml FROM source.Messages ORDER BY timestamp """)
 
         c.execute(""" DETACH DATABASE source """)
+
+def prepare_export_rowset(c):
+    c.execute(""" CREATE TEMP TABLE ordered_chat (_chatname TEXT NOT NULL, _chattimestamp INTEGER NOT NULL) """)
+    c.execute(""" INSERT INTO ordered_chat SELECT name, timestamp FROM main.chat ORDER BY timestamp """)
+    c.execute(""" SELECT * FROM main.message JOIN ordered_chat ON main.message.chatname = ordered_chat._chatname ORDER BY _chattimestamp, chatname, timestamp """)
     
 conn = sqlite3.connect(options.destination + '.db')
 conn.row_factory = sqlite3.Row
@@ -75,7 +80,7 @@ logging.info('Convert data')
 convert_data(c, options.filename)
 
 logging.info('Export to XML')
-c.execute(""" SELECT * FROM main.message ORDER BY chatname, timestamp """)
+prepare_export_rowset(c)
 xml = export_to_xml(c)
 
 with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
