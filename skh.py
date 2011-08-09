@@ -70,19 +70,18 @@ conn.row_factory = sqlite3.Row
 
 c = conn.cursor()
 
-if len(options.filename):
-    logging.info('Check export table')
-    check_export_table(c)
+logging.info('Check export table')
+check_export_table(c)
 
-    logging.info('Convert data')
-    convert_data(c, options.filename)
-    
-    logging.info('Export to XML')
-    xml = export_to_xml(c)
+logging.info('Convert data')
+convert_data(c, options.filename)
 
-    with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
-        xml_file.write(xml.encode('utf-8'))
-else:
-    logging.warning('Empty file set')
+logging.info('Export to XML')
+xml = export_to_xml(c)
+
+with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
+    xml_file.write(xml.encode('utf-8'))
 
 conn.close()
+
+logging.info('Finished')

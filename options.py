@@ -29,7 +29,7 @@ def get_options(version):
     parser.add_option('-t', '--type', dest="type", action="store", type="format", help="Type of export [xml|txt|html|db]", metavar="TYPE", default="db")
 
     (options, args) = parser.parse_args()
-
+    
     if options.filename is None:
         options.filename = list()
 
@@ -51,14 +51,19 @@ def get_options(version):
 
     except OptionValueError as e:
         parser.error(e.msg)
-        
+
+    options.filename = list(set(options.filename))
+
+    if not len(options.filename):
+        parser.error('Empty input file set')
+
     out_dir = os.path.dirname(options.destination)
     out_file, format = os.path.splitext(os.path.basename(options.destination))
     format = format.lstrip('.')
-    
+
     if out_dir == '':
         out_dir = os.getcwd()
-    
+
     options.destination = os.path.join(out_dir, out_file)
     
     if format != '':
