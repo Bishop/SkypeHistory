@@ -29,7 +29,7 @@ def get_options(version):
     parser.add_option('-t', '--type', dest="type", action="store", type="format", help="Type of export [xml|txt|html|db]", metavar="TYPE", default="db")
 
     (options, args) = parser.parse_args()
-    
+
     if options.filename is None:
         options.filename = list()
 
@@ -65,8 +65,8 @@ def get_options(version):
         out_dir = os.getcwd()
 
     options.destination = os.path.join(out_dir, out_file)
-    
+
     if format != '':
         options.type = _check_format(None, 'format', format)
-    
+
     return options
