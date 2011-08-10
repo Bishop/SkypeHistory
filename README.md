@@ -5,6 +5,7 @@ This is Python script for export Skype chat history from many datafiles in one p
 Usage: skh.py [options]
 
 Options:
+
     --version             show program's version number and exit
     -h, --help            show this help message and exit
     -i FILE, --input-file=FILE
