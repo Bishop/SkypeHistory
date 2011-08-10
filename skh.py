@@ -21,38 +21,28 @@ def check_export_table(c):
         c.execute(sql)
 
 def export_to_xml(row_set):
-    from xml.dom.minidom import Document
-    doc = Document()
+    from xml.etree.ElementTree import Element, SubElement, tostring
 
-    def text_node(name, value):
-        node = doc.createElement(name)
-        node.appendChild(doc.createTextNode(value))
-        return node
+    doc = Element('history')
 
-    h = doc.createElement("history")
-    doc.appendChild(h)
-
-    conversation_id = ''
+    chat_id = ''
 
     for row in row_set:
-        if conversation_id != row['chatname']:
-            conversation = doc.createElement("conversation")
-            conversation.setAttribute("id", row['chatname'])
-            conversation.setAttribute("timestamp", str(row['chattimestamp']))
-            h.appendChild(conversation)
-            conversation_id = row['chatname']
+        if chat_id != row['chatname']:
+            chat = SubElement(doc, 'conversation', { 
+                'id': row['chatname'], 
+                'timestamp': str(row['chattimestamp'])
+            })
+            chat_id = row['chatname']
 
-        m = doc.createElement("message")
+        msg = SubElement(chat, 'message')
 
-        m.appendChild(text_node("author", row['author']))
-        m.appendChild(text_node("timestamp", str(row['timestamp'])))
+        SubElement(msg, 'author').text = row['author']
+        SubElement(msg, 'timestamp').text = str(row['timestamp'])
 
-        if row['message'] is not None:
-            m.appendChild(text_node("text", row['message']))
+        SubElement(msg, 'message').text = row['message'] if row['message'] is not None else ''
 
-        conversation.appendChild(m)
-
-    return doc.toprettyxml(indent="\t")
+    return tostring(doc, encoding="utf-8")
 
 def convert_data(c, files):
     for source in files:
@@ -85,7 +75,7 @@ prepare_export_rowset(c)
 xml = export_to_xml(c)
 
 with tempfile.NamedTemporaryFile(dir='.', delete=False) as xml_file:
-    xml_file.write(xml.encode('utf-8'))
+    xml_file.write(xml)
 
 conn.close()
 
