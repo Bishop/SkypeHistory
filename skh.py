@@ -21,7 +21,12 @@ def check_export_table(c):
         c.execute(sql)
 
 def export_to_xml(row_set):
-    from xml.etree.ElementTree import Element, SubElement, tostring
+    try:
+        from lxml.etree import Element, SubElement, tostring
+        format = { 'pretty_print': True, 'xml_declaration': True}
+    except ImportError:
+        from xml.etree.ElementTree import Element, SubElement, tostring
+        format = {}
 
     doc = Element('history')
 
@@ -42,7 +47,7 @@ def export_to_xml(row_set):
 
         SubElement(msg, 'message').text = row['message'] if row['message'] is not None else ''
 
-    return tostring(doc, encoding="utf-8")
+    return tostring(doc, encoding="utf-8", **format)
 
 def convert_data(c, files):
     for source in files:
